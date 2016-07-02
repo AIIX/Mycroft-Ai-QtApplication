@@ -25,8 +25,9 @@
    1. Copy "start.sh" to mycroft-core-master folder
    2. Copy & Replace "listener.py" to mycroft-core-master/mycroft/client/speech/ folder
    3. Copy "gui" folder to mycroft-core-master/mycroft/client/ folder
-   4. Run "chmod a+x Mycroft\ QtApplication"
-   5. Execute Mycroft\ QtApplication AppImage 
+   4. Copy files from your '/usr/lib/python2.7/dist-packages/' to '/home/$user/.virtualenvs/mycroft/lib/python2.7/site-packages' Files: *dbus folder *dbus bindings file *dbus glib binding file *gi folder *glib folder *gobject folder
+   5. Run "chmod a+x Mycroft\ QtApplication"
+   6. Execute Mycroft\ QtApplication AppImage 
 
 ### [3] Bugs
    1. Text Input Does Not Register -> (Resend the text) -> if it still doesnt register -> (Resend the text) [Text input is not recommended to use]
