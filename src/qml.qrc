@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>main.qml</file>
-        <file alias="appicon">appicon.png</file>
-        <file>background.png</file>
-    </qresource>
-</RCC>
