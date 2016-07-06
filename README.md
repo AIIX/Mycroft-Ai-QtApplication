@@ -13,7 +13,7 @@
 
 ### [0] Changelog
    1. Release Version 0.1.1
-   2. Easy one script install for *K/Ubuntu 15.10+ based distributions
+   2. Easy one script install for *K/Ubuntu 16.04+ based distributions
    3. Updated User Interface
    4. Voice reactive animations
    5. Text bugs fixed
