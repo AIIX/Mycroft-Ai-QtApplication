@@ -7,9 +7,9 @@
 
 0. Changelog
 1. Auto Install
-1. Manual Install Requirements
 2. Running The Application
-3. Bugs
+3. Manual Install Requirements
+4. Bugs
 
 ### [0] Changelog
    1. Release Version 0.1.1
@@ -46,5 +46,5 @@
    15. Run "chmod a+x Mycroft\ QtApplication"
    16. Execute Mycroft\ QtApplication AppImage 
 
-### [3] Bugs
+### [4] Bugs
    1. None -> Report issue if found
