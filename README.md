@@ -2,6 +2,7 @@
 ###Qt5 Application Frontend for Mycroft Ai
 
 #####[Under Developement]
+Demo: https://www.youtube.com/watch?v=P85kawMNUfw
 
 #####Please Note: This application is dependent on Mycroft Ai Core. mycroft-core is required to be present in your '/home/$user' Directory for this application to work.
 
