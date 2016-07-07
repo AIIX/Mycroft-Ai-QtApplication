@@ -20,8 +20,10 @@
    6. Initial Integration of Application Indicator 
 
 ### [1] Auto Install Script
-   1. Download the git repo
-   2. Post Mycroft Ai Core installation run script ./qtappdeps.sh
+   
+   1. Install Mycroft Core from: https://github.com/mycroftai/mycroft-core 
+   1. Download this git repo (Mycroft-Ai-QtApplication)
+   2. Post Mycroft Ai Core installation run script ./qtappdeps.sh from the Mycroft-Ai-QtApplication
 
 ### [2] Running The Application
    1. Launch application
