@@ -1,0 +1,33 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>images/trayicon.png</file>
+        <file>Weather.qml</file>
+        <file>Stockwidget.qml</file>
+        <file>Settings.qml</file>
+        <file>Suggestions.qml</file>
+        <file>Welcome.qml</file>
+        <file>images/10.jpg</file>
+        <file>images/appicon.png</file>
+        <file>images/background.png</file>
+        <file>images/bluebg.png</file>
+        <file>images/bluesky.png</file>
+        <file>images/clearsky.gif</file>
+        <file>images/Column_Dawid_voorkant.jpg</file>
+        <file>images/depositphotos_40095205-stock-video-broadcast-news-intro-opening-earth.jpg</file>
+        <file>images/funnyface.png</file>
+        <file>images/mleftanim.png</file>
+        <file>images/mleftmidanim.png</file>
+        <file>images/mleftsmallanim.png</file>
+        <file>images/mmidanim.png</file>
+        <file>images/mycicon.png</file>
+        <file>images/Mycroft-Logo-square.png</file>
+        <file>images/rain.gif</file>
+        <file>images/reminder.png</file>
+        <file>images/settings-icon.png</file>
+        <file>images/snow.gif</file>
+        <file>images/stocks.png</file>
+        <file>images/weathericon.png</file>
+        <file>images/mycroft-plasma-appicon.svg</file>
+    </qresource>
+</RCC>

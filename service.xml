@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<node name="/com/mycroftaikde/KDEPlasmoid">
+<interface name="com.mycroftkde.KDEPlasmoid">
+<method name="GetQueryResult">
+<arg type="s" name="getqueryresult" direction="in" />
+</method>
+<method name="SendQuery">
+<arg type="s" name="sendquery" direction="out" />
+</method>
+<method name="emitSignal"/>
+<signal name="signalQueryReady">
+<arg type="s" direction="out" />
+</signal>    
+</interface>
+</node>
