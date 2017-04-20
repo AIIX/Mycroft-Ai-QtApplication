@@ -1,0 +1,19 @@
+# Mycroft Ai QT Standalone Application
+This application provides Mycroft with Standalone GUI interface for OS/Desktops which do not support native desktop integration interfaces.
+
+#### QT5 Requirements:
+* Qt5
+* QtQuick 2.0
+* QtQml Models 2.2
+* QtQuick Controls 1.0
+* QtQuick Layouts 1.0
+* Qt Websockets 1.0
+* QtQuick Controls Styles 1.4
+* Qt Creator (QT IDE FOR APP DEVELOPMENT)
+
+#### Build Instructions:
+- Open Qt Creator
+- Select Open Project
+- Select mycroft-qtapplication.pro file 
+- Check for Errors, Missing Dependencies
+- Build & Run
