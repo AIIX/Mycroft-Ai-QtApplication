@@ -5,6 +5,8 @@ This application provides Mycroft with Standalone GUI interface for OS/Desktops 
 * Appimage for the Qt Application for any desktop environment (Linux).
 * Download -> chmod +x mycroft-qtapplication.AppImage -> Run
 
+### Building From Source: 
+
 #### QT5 Requirements:
 * Qt5
 * QtQuick 2.0
