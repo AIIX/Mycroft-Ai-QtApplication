@@ -12,6 +12,7 @@ This application provides Mycroft with Standalone GUI interface for OS/Desktops 
 * Qt Creator (QT IDE FOR APP DEVELOPMENT)
 
 #### Build Instructions:
+- Git clone https://github.com/AIIX/Mycroft-Ai-QtApplication/
 - Open Qt Creator
 - Select Open Project
 - Select mycroft-qtapplication.pro file 
