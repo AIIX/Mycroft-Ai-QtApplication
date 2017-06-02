@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.0
+import Qt.labs.settings 1.0
 
 Rectangle {
     id: rectangle1
@@ -8,6 +9,7 @@ Rectangle {
     anchors.fill: parent
     property alias strscript: textField1.text
     property alias stpscript: textField2.text
+    property alias wspath: textField3.text
 
     Item {
         id: settingstabcolumntop2
@@ -95,6 +97,17 @@ Rectangle {
             anchors.topMargin: 10
         }
 
+        TextField {
+            id: textField3
+            width: 263
+            height: 25
+            text: qsTr("ws://0.0.0.0:8181/core")
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: textField1.horizontalCenter
+            anchors.top: textField2.bottom
+            anchors.topMargin: 10
+        }
+
         Label {
             id: label1
             text: qsTr("Mycroft Start Script")
@@ -112,5 +125,22 @@ Rectangle {
             anchors.top: label1.bottom
             anchors.topMargin: 14
         }
+
+        Label {
+            id: label3
+            text: qsTr("Mycroft WS IP")
+            font.bold: true
+            anchors.top: label2.bottom
+            anchors.topMargin: 18
+        }
+
+    }
+
+    Settings {
+        id: innerset
+        property alias wsip: textField3.text
+        property alias customlocstart: textField1.text
+        property alias customlocstop: textField2.text
+        property alias fntsize: fontsizetextfld.text
     }
 }

@@ -23,7 +23,7 @@ ApplicationWindow {
 
     WebSocket {
         id: socket
-        url: "ws://0.0.0.0:8181/core"
+        url: settingswidgetloader.wspath
         onTextMessageReceived: {
             //console.log(message)
             var somestring = JSON.parse(message)
@@ -263,6 +263,24 @@ ApplicationWindow {
             anim1.running = true
         }
 
+        onStatusChanged: if (socket.status == WebSocket.Error) {
+                                 connectws.text = "Error"
+                                 connectws.color = "red"
+                          } else if (socket.status == WebSocket.Open) {
+                                 connectws.text = "Ready"
+                                 connectws.color = "green"
+                          } else if (socket.status == WebSocket.Closed) {
+                                 connectws.text = "Closed"
+                                 connectws.color = "white"
+                          } else if (socket.status == WebSocket.Connecting) {
+                                 connectws.text = "Starting.."
+                                 connectws.color = "white"
+                          } else if (socket.status == WebSocket.Closing) {
+                                 connectws.text = "Shutting.."
+                                 connectws.color = "blue"
+                          }
+
+
         active: false
     }
 
@@ -315,7 +333,7 @@ ApplicationWindow {
 
             Connections {
                target: suggestionswidgetloader.item
-               Component.onCompleted: print ("Connections Component.onCompleted")
+               //Component.onCompleted: print ("Connections Component.onCompleted")
                onMessage: {
                  //console.log(msg);
                  var socketmessage = {};
@@ -340,14 +358,13 @@ ApplicationWindow {
 
        }
 
-     Settings {
+     Options {
            id: settingswidgetloader
            anchors.top: rectangletopbar.bottom
            anchors.bottom: rectanglebottombar.top
            anchors.left: parent.left
            anchors.right: parent.right
            visible: false
-           //source: "Settings.qml"
          }
 
 
@@ -528,7 +545,7 @@ ApplicationWindow {
                     width: 75
                     height: 12
                     color: "#ffffff"
-                    text: qsTr("Enter Query")
+                    text: qsTr("  Enter Query")
                     font.pixelSize: 12
                 }
             }
@@ -579,11 +596,11 @@ ApplicationWindow {
                                     myLauncher.launchScript(strt)
                                     welcomewidgetloader.active = false;
                                     suggestionswidgetloader.visible = true;
-                                    connectws.text = qsTr("Starting...");
+                                    //connectws.text = qsTr("Starting...");
                                     anim1.running = true
                                     delay(12000, function() {
                                         socket.active = true
-                                        connectws.text = qsTr("Connected")
+                                        //connectws.text = qsTr("Connected")
                                         anim1.running = true
                                     })
                 }
@@ -633,7 +650,7 @@ ApplicationWindow {
                     welcomewidgetloader.active = true;
                     suggestionswidgetloader.visible = false;
                     rectangleresultbox.visible = false;
-                    connectws.text = qsTr("Stopped");
+                    //connectws.text = qsTr("Stopped");
                     socket.active = false
                     anim1.running = true
                 }

@@ -56,7 +56,7 @@ Item {
 
 
                 Component.onCompleted: {
-                    print("MyItem Component.onCompleted")
+                    //print("MyItem Component.onCompleted")
                     main.message("signal sent");
                 }
 
@@ -117,7 +117,7 @@ Item {
 
 
                 Component.onCompleted: {
-                    print("MyItem Component.onCompleted")
+                    //print("MyItem Component.onCompleted")
                     main.message("signal sent");
                 }
 
@@ -178,7 +178,7 @@ Item {
 
 
                 Component.onCompleted: {
-                    print("MyItem Component.onCompleted")
+                    //print("MyItem Component.onCompleted")
                     main.message("signal sent");
                 }
 

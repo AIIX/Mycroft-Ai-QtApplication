@@ -5,7 +5,7 @@ color: "#e63d8ac6"
 
 Image {
     anchors.fill: parent
-    source: "bluesky.png"
+    source: "images/bluesky.png"
 
     Rectangle {
         id: rectangle1

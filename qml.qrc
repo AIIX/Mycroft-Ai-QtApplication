@@ -4,7 +4,7 @@
         <file>images/trayicon.png</file>
         <file>Weather.qml</file>
         <file>Stockwidget.qml</file>
-        <file>Settings.qml</file>
+        <file>Options.qml</file>
         <file>Suggestions.qml</file>
         <file>Welcome.qml</file>
         <file>images/10.jpg</file>
