@@ -1,5 +1,16 @@
-# Mycroft Ai QT Standalone Application
-This application provides Mycroft with Standalone GUI interface for OS/Desktops which do not support native desktop integration interfaces.
+## Mycroft AI Standalone GUI Client Version 1.3
+##### Standalone GUI client for Mycroft written in QT, support for all Desktop Environments
+###### Appimage Release - Comes bundled with all the QT/GUI Dependencies
+ 
+What's New: 
+* added: Fullscreen support, ability to resize in windowed mode
+* added: New conversation model allows visual feedback for skill results
+* added: Web-view integration for skills with HTML type data
+* added: New conversation animation
+* added: Inbuilt Installation feature for all skills listed in mycroft-skills directly from the application using MSM Skill Installer
+* added: Drag and Drop to conversation area for Image/File Recognition type skills
+* added: To settings ability to set custom drag and drop (Image/File) recognition command  
+* changed: Redesign for better space management and dedicated animations bar
 
 #### AppImage:
 * Appimage for the Qt Application for any desktop environment (Linux).
