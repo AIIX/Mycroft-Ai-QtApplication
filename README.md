@@ -11,9 +11,11 @@ This application provides Mycroft with Standalone GUI interface for OS/Desktops 
 * Qt5
 * QtQuick 2.0
 * QtQml Models 2.2
-* QtQuick Controls 1.0
-* QtQuick Layouts 1.0
+* QtQuick Controls 2.0
+* QtQuick Layouts 1.3
 * Qt Websockets 1.0
+* Qt Webkit 3.0
+* Qt Webkit Experimental 1.0
 * QtQuick Controls Styles 1.4
 * Qt Creator (QT IDE FOR APP DEVELOPMENT)
 
