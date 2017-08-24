@@ -1,11 +1,11 @@
-import QtQuick 2.0
+import QtQuick 2.5
 
 Rectangle {
 color: "#e63d8ac6"
 
 Image {
     anchors.fill: parent
-    source: "images/bluesky.png"
+    source: "images/whitespace.jpg"
 
     Rectangle {
         id: rectangle1

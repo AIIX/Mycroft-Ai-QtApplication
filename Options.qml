@@ -1,11 +1,11 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import QtQuick.Controls 2.0
-import QtQuick.Layouts 1.0
+import QtQuick.Layouts 1.1
 import Qt.labs.settings 1.0
 
 Rectangle {
     id: rectangle1
-    color: "#0e884b"
+    color: "#0e7f86"
     anchors.fill: parent
     property alias strscript: textField1.text
     property alias stpscript: textField2.text
@@ -51,20 +51,20 @@ Rectangle {
 
         TextField {
             id: fontsizetextfld
-            width: 36
-            height: 26
+            width: 28
+            height: 46
             text: qsTr("12")
             anchors.left: fontsizelabelfld.right
             anchors.verticalCenter: fontsizelabelfld.verticalCenter
-            anchors.leftMargin: 10
+            anchors.leftMargin: 6
         }
 
         Button {
             id: button1
-            width: 100
-            height: 18
+            width: 102
+            height: 42
             text: qsTr("Apply")
-            anchors.verticalCenterOffset: -42
+            anchors.verticalCenterOffset: -33
             anchors.verticalCenter: fontsizetextfld.verticalCenter
             anchors.left: label2.right
             anchors.leftMargin: 177
@@ -76,36 +76,37 @@ Rectangle {
 
         TextField {
             id: textField1
-            width: 262
-            height: 26
+            width: 274
+            height: 43
             text: qsTr("/home/Aix/mycroft-core/mycroft.sh")
             horizontalAlignment: Text.AlignHCenter
-            anchors.horizontalCenterOffset: 140
+            anchors.horizontalCenterOffset: 162
             anchors.horizontalCenter: fontsizetextfld.horizontalCenter
             anchors.top: fontsizetextfld.bottom
-            anchors.topMargin: 14
+            anchors.topMargin: 2
         }
 
         TextField {
             id: textField2
-            width: 263
-            height: 25
+            width: 275
+            height: 40
             text: qsTr("/home/Aix/mycroft-core/mycroft.sh")
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: textField1.horizontalCenter
             anchors.top: textField1.bottom
-            anchors.topMargin: 10
+            anchors.topMargin: -1
         }
 
         TextField {
             id: textField3
-            width: 263
-            height: 25
+            width: 273
+            height: 40
             text: qsTr("ws://0.0.0.0:8181/core")
+            anchors.horizontalCenterOffset: 1
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: textField1.horizontalCenter
             anchors.top: textField2.bottom
-            anchors.topMargin: 10
+            anchors.topMargin: -3
         }
 
         Label {
@@ -129,6 +130,7 @@ Rectangle {
         Label {
             id: label3
             text: qsTr("Mycroft WS IP")
+            textFormat: Text.AutoText
             font.bold: true
             anchors.top: label2.bottom
             anchors.topMargin: 18

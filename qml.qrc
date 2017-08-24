@@ -2,10 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>images/trayicon.png</file>
-        <file>Weather.qml</file>
-        <file>Stockwidget.qml</file>
         <file>Options.qml</file>
-        <file>Suggestions.qml</file>
         <file>Welcome.qml</file>
         <file>images/10.jpg</file>
         <file>images/appicon.png</file>
@@ -19,7 +16,6 @@
         <file>images/mleftanim.png</file>
         <file>images/mleftmidanim.png</file>
         <file>images/mleftsmallanim.png</file>
-        <file>images/mmidanim.png</file>
         <file>images/mycicon.png</file>
         <file>images/Mycroft-Logo-square.png</file>
         <file>images/rain.gif</file>
@@ -29,5 +25,28 @@
         <file>images/stocks.png</file>
         <file>images/weathericon.png</file>
         <file>images/mycroft-plasma-appicon.svg</file>
+        <file>SimpleMessageType.qml</file>
+        <file>WebViewType.qml</file>
+        <file>images/hint.svg</file>
+        <file>images/installer.svg</file>
+        <file>images/settings.svg</file>
+        <file>images/home.svg</file>
+        <file>SkillModel.qml</file>
+        <file>images/alarm.png</file>
+        <file>images/desktop.png</file>
+        <file>images/dateandtime.png</file>
+        <file>images/joke.png</file>
+        <file>images/view-fullscreen.svg</file>
+        <file>images/whitespace.jpg</file>
+        <file>SwitchButton.qml</file>
+        <file>TopBarAnim.qml</file>
+        <file>MsmView.qml</file>
+        <file>images/mmidanim.png</file>
+        <file>images/wikip.png</file>
+        <file>images/wolfram.png</file>
+        <file>images/weather.png</file>
+        <file>images/spell.png</file>
+        <file>images/climatesc.jpg</file>
+        <file>images/mycroft-plasma-appicon.png</file>
     </qresource>
 </RCC>

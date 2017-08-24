@@ -4,16 +4,22 @@
 #include "scriptlauncher.h"
 #include "iconscriptlauncher.h"
 #include <QIcon>
+#include <QtWebSockets/QtWebSockets>
 #include <QMessageBox>
 #include <QAction>
 #include <QMenu>
 #include <QSystemTrayIcon>
+#include <QQuickStyle>
+#include "msmapp.h"
+#include "filereader.h"
 
 int main(int argc, char *argv[])
 { 
     QApplication app(argc, argv);
-    QApplication::setWindowIcon(QIcon(":/images/mycroft-plasma-appicon.svg"));
+    QApplication::setWindowIcon(QIcon(":/images/mycroft-plasma-appicon.png"));
     qmlRegisterType<ScriptLauncher>("MycroftLauncher", 1, 0, "ScriptLauncher");
+    qmlRegisterType<MsmApp>("MsmInstaller", 1, 0, "MsmApp");
+    qmlRegisterType<FileReader>("MsmFileReader", 1, 0, "FileReader");
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
                 QMessageBox::critical(0, QObject::tr("Systray"),
@@ -23,6 +29,8 @@ int main(int argc, char *argv[])
             }
     QApplication::setQuitOnLastWindowClosed(false);
     iconscriptlauncher imlauncher;
+    QWebSocket imsocket;
+    QQuickStyle::setStyle("Material");
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     QObject *root = 0;
@@ -44,7 +52,7 @@ int main(int argc, char *argv[])
 
                 QSystemTrayIcon *trayIcon = new QSystemTrayIcon(root);
                 trayIcon->setContextMenu(trayIconMenu);
-                trayIcon->setIcon(QIcon(":/images/mycroft-plasma-appicon.svg"));
+                trayIcon->setIcon(QIcon(":/images/mycroft-plasma-appicon.png"));
                 trayIcon->show();
                 trayIcon->connect(restoreAction, SIGNAL(triggered()), root, SLOT(showNormal()));
             }

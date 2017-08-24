@@ -1,274 +1,166 @@
-import QtQuick 2.0
+import QtQuick 2.5
+import QtQuick.Window 2.0
 import QtQml.Models 2.2
-import QtQuick.Controls 1.0
-import QtQuick.Layouts 1.0
+import QtQuick.Controls 2.0
+import QtQuick.Layouts 1.1
 import Qt.WebSockets 1.0
-import QtQuick.Controls.Styles 1.4 
+import QtQuick.Controls.Material 2.0
 import MycroftLauncher 1.0
+import MsmInstaller 1.0
+import MsmFileReader 1.0
+import Qt.labs.settings 1.0
 
 ApplicationWindow {
     id: root
     signal submitTextField(string text)
     signal senddbussignal(string text)
     minimumWidth: 450
-    minimumHeight: 250
-    maximumHeight: minimumHeight
-    maximumWidth: minimumWidth
+    minimumHeight: 300
     visible: true
     color: "#1a1a1a"
     title: qsTr("Mycroft QtApplication")
-    property alias textinputsize: qboxoutput.font.pixelSize
+    property alias cbwidth: rectangle2.width
+    property var smintent
+    property var dataContent
+    property var skillList: []
+    property alias strscript: textField1.text
+    property alias stpscript: textField2.text
+    property alias wspath: textField3.text
+
+    Material.theme: Material.Dark
+    Material.accent: Material.Cyan
+
+    property bool fullscreen: false
+    onFullscreenChanged: root.visibility = (fullscreen ? Window.FullScreen : Window.Windowed)
+
+    function filterSpeak(msg){
+            convoLmodel.append({
+                "itemType": "NonVisual",
+                "InputQuery": msg
+            })
+               inputlistView.positionViewAtEnd();
+        }
+
+        function filterincoming(intent, metadata) {
+            var intentVisualArray = ['WeatherSkill:CurrentWeatherIntent'];
+            var itemType
+
+            if (intentVisualArray.indexOf(intent) !== -1) {
+                    switch (intent){
+                    case "WeatherSkill:CurrentWeatherIntent":
+                        itemType = "CurrentWeather"
+                        break;
+                    }
+
+                  convoLmodel.append({"itemType": itemType, "itemData": metadata})
+                    }
+
+            else {
+                convoLmodel.append({"itemType": "WebViewType", "InputQuery": metadata.url})
+            }
+        }
+
+        function clearList() {
+                inputlistView.clear()
+            }
+
+        function getFileExtenion(filePath){
+               var ext = filePath.split('.').pop();
+               return ext;
+        }
+
+        function validateFileExtension(filePath) {
+                      var ext = filePath.split('.').pop();
+                      return ext === "jpg" || ext === "png" || ext === "jpeg" || ext === 'mp3' || ext === 'wav' || ext === 'mp4'
+        }
+
+        function getSkillByName(skillName){
+            var tempSN=[];
+            for(var i = 0; i <skillList.length;i++){
+                var sList = skillList[i].name;
+                if(sList.indexOf(skillName) !== -1){
+                    tempSN.push(skillList[i]);
+                }
+            }
+            return tempSN;
+        }
+
+        function getSkills() {
+          var doc = new XMLHttpRequest()
+          var url = "https://raw.githubusercontent.com/MycroftAI/mycroft-skills/master/.gitmodules"
+          doc.open("GET", url, true);
+          doc.send();
+
+          doc.onreadystatechange = function() {
+            if (doc.readyState === XMLHttpRequest.DONE) {
+              var path, list;
+              var tempRes = doc.responseText
+              var moduleList = tempRes.split("[");
+              for (var i = 1; i < moduleList.length; i++) {
+                path = moduleList[i].substring(moduleList[i].indexOf("= ") + 2, moduleList[i].indexOf("url")).replace(/^\s+|\s+$/g, '');
+                url = moduleList[i].substring(moduleList[i].search("url =") + 6).replace(/^\s+|\s+$/g, '');
+                skillList[i-1] = {"name": path, "url": url};
+                msmskillsModel.reload();
+              }
+            }
+          }
+        }
+
+        function refreshAllSkills(){
+            getSkills();
+            msmskillsModel.reload();
+        }
+
+        function getAllSkills(){
+            if(skillList.length <= 0){
+                getSkills();
+            }
+            return skillList;
+        }
 
     ScriptLauncher { id: myLauncher }
+    FileReader {id: myReader }
+    MsmApp {id: launchinstaller }
 
     WebSocket {
         id: socket
-        url: settingswidgetloader.wspath
+        url: innerset.wsip
         onTextMessageReceived: {
-            //console.log(message)
             var somestring = JSON.parse(message)
-            var msgType = somestring.type;
-            if (msgType === "speak") {
-                var post = somestring.data.utterance;
-                var componentweather = Qt.createComponent("Weather.qml")
-                var loadwin = componentweather.createObject(weatherloader)
+                        var msgType = somestring.type;
+                        qinput.focus = false;
 
-                var componentstock = Qt.createComponent("Stockwidget.qml")
-                var loadstock = componentstock.createObject(stockwidgetloader)
-                suggestionswidgetloader.visible = false;
+                        if (msgType === "recognizer_loop:utterance") {
+                            var intpost = somestring.data.utterances;
+                            qinput.text = intpost.toString()
+                            midbarAnim.wsistalking()
+                        }
 
-                //console.log(post)
-                qboxoutput.text = post;
-                if (qboxoutput.text.indexOf("Register") != -1 && qboxoutput.text.indexOf("your") != -1 || qboxoutput.text.indexOf("Log") != -1 && qboxoutput.text.indexOf("in") != -1){
-                    regisbutton.visible=true;
-                }
-                else {
-                    regisbutton.visible=false;
-                }
+                        if (somestring && somestring.data && typeof somestring.data.intent_type !== 'undefined'){
+                            smintent = somestring.data.intent_type;
+                            console.log('intent type: ' + smintent);
+                        }
 
-                if (qboxoutput.text.indexOf("With") != -1 && qboxoutput.text.indexOf("a") != -1 && qboxoutput.text.indexOf("high") && qboxoutput.text.indexOf("of") != -1 && qboxoutput.text.indexOf("degrees") != -1) {
-                                    var totalnumbclimstatementa = qboxoutput.text.match(/\d/g)
+                        if(somestring && somestring.data && typeof somestring.data.utterance !== 'undefined' && somestring.type === 'speak'){
+                            filterSpeak(somestring.data.utterance);
+                        }
 
-                                    var hightempclimstatementa = totalnumbclimstatementa.toString().substring(0, 3)
-                                    hightempclimstatementa = hightempclimstatementa.replace(/\,/g,"")
-                                    //console.log(hightempclimstatementa)
+                        if(somestring && somestring.data && typeof somestring.data.desktop !== 'undefined') {
+                            dataContent = somestring.data.desktop
+                            filterincoming(smintent, dataContent)
+                        }
 
-                                    var lowtempclimstatementa = totalnumbclimstatementa.toString().substring(4,7)
-                                    lowtempclimstatementa = lowtempclimstatementa.replace(/\,/g,"")
-                                    //console.log(lowtempclimstatementa)
-
-                                    var currenttempclimstatementa = totalnumbclimstatementa.toString().substring(8,11)
-                                    currenttempclimstatementa = currenttempclimstatementa.replace(/\,/g,"")
-                                    //console.log(currenttempclimstatementa)
-
-                                    loadwin.currentweatherparam = currenttempclimstatementa
-                                    loadwin.highweatherparam = hightempclimstatementa
-                                    loadwin.lowweatherparam = lowtempclimstatementa
-                                    weatherloader.visible = true;
-                                    qboxoutput.visible = false;
-
-                                    if (currenttempclimstatementa <= "60") {
-                                        loadwin.weatherbackgroundimage = "images/snow.gif"
-                                    }
-
-                                    else if (currenttempclimstatementa <= "60" && qboxoutput.text.indexOf("mist") != -1 || qboxoutput.text.indexOf("light") != -1 && qboxoutput.text.indexOf("intensity") != -1 && qboxoutput.text.indexOf("drizzle") != -1) {
-                                            loadwin.weatherbackgroundimage = "images/rain.gif"
-                                    }
-
-                                    else if (currenttempclimstatementa >= "61") {
-                                        loadwin.weatherbackgroundimage = "images/clearsky.gif"
-                                    }
-
-                                    else if (currenttempclimstatementa >= "61" && qboxoutput.text.indexOf("mist") != -1 || qboxoutput.text.indexOf("light") != -1 && qboxoutput.text.indexOf("intensity") != -1 && qboxoutput.text.indexOf("drizzle") != -1) {
-                                            loadwin.weatherbackgroundimage = "images/rain.gif"
-                                    }
-
-                                }
-
-                else if (qboxoutput.text.indexOf("It's") != -1 && qboxoutput.text.indexOf("currently") != -1 && qboxoutput.text.indexOf("degrees") != -1 && qboxoutput.text.indexOf("Today's") != -1 && qboxoutput.text.indexOf("forecast") != -1 && qboxoutput.text.indexOf("high") != -1 && qboxoutput.text.indexOf("low") != -1) {
-
-                                    var totalnumbclimstatementb = qboxoutput.text.match(/\d/g)
-
-                                    var hightempclimstatementb = totalnumbclimstatementb.toString().substring(4,7)
-                                    hightempclimstatementb = hightempclimstatementb.replace(/\,/g,"")
-                                    //console.log(hightempclimstatementb) //current
-
-                                    var lowtempclimstatementb = totalnumbclimstatementb.toString().substring(8,11)
-                                    lowtempclimstatementb = lowtempclimstatementb.replace(/\,/g,"")
-                                    //console.log(lowtempclimstatementb) //high
-
-                                    var currenttempclimstatementb = totalnumbclimstatementb.toString().substring(0,3)
-                                    currenttempclimstatementb = currenttempclimstatementb.replace(/\,/g,"")
-                                    //console.log(currenttempclimstatementb) //low
-
-                                    loadwin.currentweatherparam = currenttempclimstatementb
-                                    loadwin.highweatherparam = hightempclimstatementb
-                                    loadwin.lowweatherparam = lowtempclimstatementb
-                                    weatherloader.visible = true;
-                                    qboxoutput.visible = false;
-
-                    if (currenttempclimstatementa <= "60") {
-                        loadwin.weatherbackgroundimage = "images/snow.gif"
-                    }
-
-                    else if (currenttempclimstatementa <= "60" && qboxoutput.text.indexOf("mist") != -1 || qboxoutput.text.indexOf("light") != -1 && qboxoutput.text.indexOf("intensity") != -1 && qboxoutput.text.indexOf("drizzle") != -1) {
-                            loadwin.weatherbackgroundimage = "images/rain.gif"
-                    }
-
-                    else if (currenttempclimstatementa >= "61") {
-                        loadwin.weatherbackgroundimage = "images/clearsky.gif"
-                    }
-
-                    else if (currenttempclimstatementa >= "61" && qboxoutput.text.indexOf("mist") != -1 || qboxoutput.text.indexOf("light") != -1 && qboxoutput.text.indexOf("intensity") != -1 && qboxoutput.text.indexOf("drizzle") != -1) {
-                            loadwin.weatherbackgroundimage = "images/rain.gif"
-                    }
-
-
-                }
-
-                else if (qboxoutput.text.indexOf("Right") != -1 && qboxoutput.text.indexOf("now") != -1 && qboxoutput.text.indexOf("and") != -1 && qboxoutput.text.indexOf("degrees") != -1 && qboxoutput.text.indexOf("for") != -1 && qboxoutput.text.indexOf("a") != -1 && qboxoutput.text.indexOf("high") != -1 && qboxoutput.text.indexOf("low") != -1) {
-
-                                    var totalnumbclimstatementc = qboxoutput.text.match(/\d/g)
-
-                                    var hightempclimstatementc = totalnumbclimstatementc.toString().substring(4,7)
-                                    hightempclimstatementc = hightempclimstatementc.replace(/\,/g,"")
-                                    //console.log(hightempclimstatementc) //low
-
-                                    var lowtempclimstatementc = totalnumbclimstatementc.toString().substring(8,11)
-                                    lowtempclimstatementc = lowtempclimstatementc.replace(/\,/g,"")
-                                    //console.log(lowtempclimstatementc) //current
-
-                                    var currenttempclimstatementc = totalnumbclimstatementc.toString().substring(0,3)
-                                    currenttempclimstatementc = currenttempclimstatementc.replace(/\,/g,"")
-                                    //console.log(currenttempclimstatementc) //high
-
-                                    loadwin.currentweatherparam = currenttempclimstatementc
-                                    loadwin.highweatherparam = hightempclimstatementc
-                                    loadwin.lowweatherparam = lowtempclimstatementc
-                                    weatherloader.visible = true;
-                                    qboxoutput.visible = false;
-
-                    if (currenttempclimstatementa <= "60") {
-                        loadwin.weatherbackgroundimage = "images/snow.gif"
-                    }
-
-                    else if (currenttempclimstatementa <= "60" && qboxoutput.text.indexOf("mist") != -1 || qboxoutput.text.indexOf("light") != -1 && qboxoutput.text.indexOf("intensity") != -1 && qboxoutput.text.indexOf("drizzle") != -1) {
-                            loadwin.weatherbackgroundimage = "images/rain.gif"
-                    }
-
-                    else if (currenttempclimstatementa >= "61") {
-                        loadwin.weatherbackgroundimage = "images/clearsky.gif"
-                    }
-
-                    else if (currenttempclimstatementa >= "61" && qboxoutput.text.indexOf("mist") != -1 || qboxoutput.text.indexOf("light") != -1 && qboxoutput.text.indexOf("intensity") != -1 && qboxoutput.text.indexOf("drizzle") != -1) {
-                            loadwin.weatherbackgroundimage = "images/rain.gif"
-                    }
-
-                }
-
-                else if (qboxoutput.text.indexOf("Tomorrow,") != -1 && qboxoutput.text.indexOf("will") != -1 && qboxoutput.text.indexOf("have") != -1 && qboxoutput.text.indexOf("a") != -1 && qboxoutput.text.indexOf("high") != -1 && qboxoutput.text.indexOf("low") != -1 && qboxoutput.text.indexOf("of") != -1) {
-
-                                    var totalnumbclimstatementd = qboxoutput.text.match(/\d/g)
-
-                                    var hightempclimstatementd = totalnumbclimstatementd.toString().substring(0, 3)
-                                    hightempclimstatementd = hightempclimstatementd.replace(/\,/g,"")
-                                    //console.log(hightempclimstatementd)
-
-                                    var lowtempclimstatementd = totalnumbclimstatementd.toString().substring(4,7)
-                                    lowtempclimstatementd = lowtempclimstatementd.replace(/\,/g,"")
-                                    //console.log(lowtempclimstatementd)
-
-                                    var currenttempclimstatementd = totalnumbclimstatementd.toString().substring(8,11)
-                                    currenttempclimstatementd = currenttempclimstatementd.replace(/\,/g,"")
-                                    //console.log(currenttempclimstatementd)
-
-                                    loadwin.currentweatherparam = currenttempclimstatementd
-                                    loadwin.highweatherparam = hightempclimstatementd
-                                    loadwin.lowweatherparam = lowtempclimstatementd
-                                    loadwin.forcasttext = "Forecast"
-                                    loadwin.forcastdegree = " "
-                                    weatherloader.visible = true;
-                                    qboxoutput.visible = false;
-                }
-
-
-                else if (qboxoutput.text.indexOf("Tomorrow,") != -1 && qboxoutput.text.indexOf("it") != -1 && qboxoutput.text.indexOf("will") != -1 && qboxoutput.text.indexOf("be") != -1 && qboxoutput.text.indexOf("a") != -1 && qboxoutput.text.indexOf("high") != -1 && qboxoutput.text.indexOf("low") != -1 && qboxoutput.text.indexOf("of") != -1) {
-
-                                    var totalnumbclimstatemente = qboxoutput.text.match(/\d/g)
-
-                                    var hightempclimstatemente = totalnumbclimstatemente.toString().substring(0, 3)
-                                    hightempclimstatemente = hightempclimstatemente.replace(/\,/g,"")
-                                    //console.log(hightempclimstatemente)
-
-                                    var lowtempclimstatemente = totalnumbclimstatemente.toString().substring(4,7)
-                                    lowtempclimstatemente = lowtempclimstatemente.replace(/\,/g,"")
-                                    //console.log(lowtempclimstatemente)
-
-                                    var currenttempclimstatemente = totalnumbclimstatemente.toString().substring(8,11)
-                                    currenttempclimstatemente = currenttempclimstatemente.replace(/\,/g,"")
-                                    //console.log(currenttempclimstatemente)
-
-                                    loadwin.currentweatherparam = currenttempclimstatemente
-                                    loadwin.highweatherparam = hightempclimstatemente
-                                    loadwin.lowweatherparam = lowtempclimstatemente
-                                    loadwin.forcasttext = "Forecast"
-                                    loadwin.forcastdegree = " "
-                                    weatherloader.visible = true;
-                                    qboxoutput.visible = false;
-                }
-
-                else
-                                {
-                                    qboxoutput.visible = true;
-                                    weatherloader.visible = false;
-                                }
-
-                if (qboxoutput.text.indexOf("With") != -1 && qboxoutput.text.indexOf("ticker") != -1 && qboxoutput.text.indexOf("symbol") != -1 && qboxoutput.text.indexOf("dollar") != -1 && qboxoutput.text.indexOf("share") != -1) {
-
-                var totalnumbstockpricestatementa = qboxoutput.text.match(/\d/g)
-                    totalnumbstockpricestatementa = totalnumbstockpricestatementa.toString().replace(/\,/g,"")
-                    var restrtotalnumbstockpricestatement = totalnumbstockpricestatementa.toString().toString().substring(0,totalnumbstockpricestatementa.length-2)+"."+totalnumbstockpricestatementa.substring(totalnumbstockpricestatementa.length-2);
-                    var ressymbolname = qboxoutput.text.match(/symbol ([A-Z]+)/)[1];
-
-
-                    //console.log(ressymbolname)
-                    loadstock.currentstockprice = "$"+restrtotalnumbstockpricestatement
-                    loadstock.currentstocksymbol = ressymbolname
-                    qboxoutput.visible = false;
-                    stockwidgetloader.visible = true
-                }
-
-                else if (qboxoutput.text.indexOf("with") != -1 && qboxoutput.text.indexOf("ticker") != -1 && qboxoutput.text.indexOf("symbol") != -1 && qboxoutput.text.indexOf("dollar") != -1 && qboxoutput.text.indexOf("share") != -1 && qboxoutput.text.indexOf("trading") != -1) {
-
-                                    var totalnumbstockpricestatementb = qboxoutput.text.match(/\d/g)
-                                    totalnumbstockpricestatementb = totalnumbstockpricestatementb.toString().replace(/\,/g,"")
-                                    var restrtotalnumbstockpricestatementb = totalnumbstockpricestatementb.toString().toString().substring(0,totalnumbstockpricestatementb.length-2)+"."+totalnumbstockpricestatementb.substring(totalnumbstockpricestatementb.length-2);
-                                    var ressymbolnameb = qboxoutput.text.match(/symbol ([A-Z]+)/)[1];
-
-                                    //console.log(ressymbolnameb)
-                                    loadstock.currentstockprice = "$"+restrtotalnumbstockpricestatementb
-                                    loadstock.currentstocksymbol = ressymbolnameb
-
-                                stockwidgetloader.visible = true
-                                qboxoutput.visible = false;
-                }
-             
-                else {
-                qboxoutput.visible = true
-                stockwidgetloader.visible = false
-                }
-
-
-            }
-            anim1.running = true
+                        midbarAnim.wsistalking()
         }
 
         onStatusChanged: if (socket.status == WebSocket.Error) {
                                  connectws.text = "Error"
                                  connectws.color = "red"
+                                 startmycservice.circolour = "red"
                           } else if (socket.status == WebSocket.Open) {
                                  connectws.text = "Ready"
                                  connectws.color = "green"
+                                 startmycservice.circolour = "green"
                           } else if (socket.status == WebSocket.Closed) {
                                  connectws.text = "Closed"
                                  connectws.color = "white"
@@ -278,205 +170,549 @@ ApplicationWindow {
                           } else if (socket.status == WebSocket.Closing) {
                                  connectws.text = "Shutting.."
                                  connectws.color = "blue"
+                                 startmycservice.circolour = "#1e4e62"
                           }
 
 
         active: false
     }
 
-    ListModel {
-        id:resultmodel
-    }
-
     Timer {
            id: timer
        }
 
-       function delay(delayTime, cb) {
+    function delay(delayTime, cb) {
                timer.interval = delayTime;
                timer.repeat = false;
                timer.triggered.connect(cb);
                timer.start();
            }
 
-       Loader {
-           id: welcomewidgetloader
-           anchors.top: rectangletopbar.bottom
-           anchors.bottom: rectanglebottombar.top
-           anchors.left: parent.left
-           anchors.right: parent.right
-           visible: true;
-           active: true;
-           focus: true;
-           source: "Welcome.qml"
-
-           MouseArea {
-               anchors.fill: parent
-
-               onDoubleClicked: {
-               welcomewidgetloader.visible = false;
-               rectangleresultbox.visible = false;
-               suggestionswidgetloader.visible = true;
-               }
-           }
-       }
-
-       Loader {
-           id: suggestionswidgetloader
-           anchors.top: rectangletopbar.bottom
-           anchors.left: parent.left
-           anchors.right: parent.right
-           visible: false;
-           source: "Suggestions.qml"
-           active: true;
-            focus: true;
-
-            Connections {
-               target: suggestionswidgetloader.item
-               //Component.onCompleted: print ("Connections Component.onCompleted")
-               onMessage: {
-                 //console.log(msg);
-                 var socketmessage = {};
-                 socketmessage.type = "recognizer_loop:utterance";
-                 socketmessage.data = {};
-                 socketmessage.data.utterances = [msg];
-                 socket.sendTextMessage(JSON.stringify(socketmessage));
-                 anim1.running = true
-                 suggestionswidgetloader.visible = false;
-                 rectangleresultbox.visible = true;
-               }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-
-                onDoubleClicked: {
-                suggestionswidgetloader.visible = false;
-                rectangleresultbox.visible = true;
-                }
-            }
-
-       }
-
-     Options {
-           id: settingswidgetloader
-           anchors.top: rectangletopbar.bottom
-           anchors.bottom: rectanglebottombar.top
-           anchors.left: parent.left
-           anchors.right: parent.right
-           visible: false
-         }
-
-
      Rectangle {
         id: rectangleresultbox
         x: 0
         y: 38
-        width: 450
-        height: 170
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: rectangletopbar.bottom
+        anchors.bottom: rectanglebottombar.top
         color: "#1d1d1d"
         border.color: "#80000000"
         border.width: 0
-        visible: false
+        visible: true
 
-        MouseArea {
+        SwipeView  {
+            id: swipeView
+            width: parent.width
+            currentIndex: bar.currentIndex
             anchors.fill: parent
 
-            onDoubleClicked: {
-            suggestionswidgetloader.visible = true;
-            rectangleresultbox.visible = false;
+        Page {
+        id: homeTab
+
+        Loader {
+            id: welcomewidgetloader
+            anchors.fill: parent
+            visible: true;
+            active: true;
+            focus: true;
+            source: "Welcome.qml"
+            z: 100;
+
+            MouseArea {
+                anchors.fill: parent
+                onDoubleClicked: {
+                welcomewidgetloader.visible = false;
+                }
             }
         }
 
-        Rectangle {
-            id: weatherloader
+        Flickable {
+            id: rect2flickable
             anchors.fill: parent
-            visible: false;
-        }
+            contentHeight: parent.height
+            contentWidth: parent.width
 
         Rectangle {
-            id: stockwidgetloader
-            anchors.fill: parent
-            visible: false;
-        }
+           id: rectangle2
+           color: "#1d1d1d"
+           anchors.fill: parent
 
-        Image {
-            id: image1
-            x: 156
-            y: 35
-            opacity: 0.1
-            width: 138
-            height: 100
-            source: "images/background.png"
+        DropArea {
+               anchors.fill: parent;
+               id: dragTarget
+               onEntered: {
+                for(var i = 0; i < drag.urls.length; i++)
+                    if(validateFileExtension(drag.urls[i]))
+                    return
+                    console.log("No valid files, refusing drag event")
+                    drag.accept()
+                    dragTarget.enabled = false
+               }
 
-            SequentialAnimation {
-                        id: anim1
-                        PropertyAnimation {
-                            target: image1
-                            property: "opacity"
-                            to: "0.6"
-                            duration: 1
-                        }
+               onDropped: {
+                for(var i = 0; i < drop.urls.length; i++){
+                var ext = getFileExtenion(drop.urls[i]);
+                if(ext === "jpg" || ext === "png" || ext === "jpeg"){
+                   var durl = String(drop.urls[i]);
+                   console.log(durl)
+                   convoLmodel.append({
+                       "itemType": "DropImg",
+                       "InputQuery": durl
+                       })
+                       inputlistView.positionViewAtEnd();
 
-                        PropertyAnimation {
-                             target: image1
-                             property: "opacity"
-                             to: "0.1"
-                             duration: 1000
+
+                   var irecogmsgsend = innerset.customrecog
+                   var socketmessage = {};
+                   socketmessage.type = "recognizer_loop:utterance";
+                   socketmessage.data = {};
+                   socketmessage.data.utterances = [irecogmsgsend + " " + durl];
+                   socket.sendTextMessage(JSON.stringify(socketmessage));
+                   console.log(irecogmsgsend + " " + durl);
+                    }
+
+                if(ext === 'mp3'){
+                    console.log('mp3');
+                    }
+                }
+            }
+
+
+               ListModel{
+               id: convoLmodel
+               }
+
+                Rectangle {
+                    id: messageBox
+                    anchors.fill: parent
+                    anchors.right: dragTarget.right
+                    anchors.left: dragTarget.left
+                    color: "#222"
+
+                    ColumnLayout {
+                        id: colconvo
+                        anchors.fill: parent
+
+                    ListView {
+                        id: inputlistView
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        verticalLayoutDirection: ListView.TopToBottom
+                        spacing: 12
+                        model: convoLmodel
+                        //ScrollBar.vertical: ScrollBar {}
+                        delegate:  Component {
+                                   Loader {
+                                       source: switch(itemType) {
+                                               case "NonVisual": return "SimpleMessageType.qml"
+                                               case "WebViewType": return "WebViewType.qml"
+                                               case "CurrentWeather": return "CurrentWeatherType.qml"
+                                               case "DropImg" : return "ImgRecogType.qml"
+                                               }
+                                        property var metacontent : dataContent
+                                       }
+                               }
+
+                    onCountChanged: {
+                        inputlistView.positionViewAtEnd();
+                                    }
                                         }
+                                            }
+                                                }
+                                                    }
+                                                        }
+                                                           }
+                                                                 }
 
-                 }
+        Page {
+        id: hintTab
+        Rectangle {
+           id: rectangle2hints
+           color: "#1d1d1d"
+           anchors.fill: parent
+
+           Rectangle {
+                   anchors.top: rectangle2hints.top
+                   anchors.left: rectangle2hints.left
+                   anchors.right: rectangle2hints.right
+                   id: skillsrectmain
+                   color: "#222"
+
+               Component {
+                       id: skillDelegate
+                       Rectangle {
+                           id: skillcontent
+                           Layout.fillWidth: true;
+                           anchors { left: parent.left; right: parent.right }
+                           height: 80
+                           border.width: 0
+                           border.color: "lightsteelblue"
+                           radius: 2
+                           color: "#222"
+                           z: -99
+
+                           RowLayout {
+                           id: skillTopRowLayout
+                           spacing: 5
+                           anchors.fill: parent
+
+                           Label {
+                               id: innerskllname
+                               anchors.top: parent.top
+                               anchors.topMargin: 2
+                               anchors.left: parent.left
+                               anchors.right: parent.right
+                               wrapMode: Text.WordWrap;
+                               font.bold: true;
+                               text: qsTr('<b>Skill:</b>' + Skill)
+                           }
+
+                           Rectangle {
+                               id: skilltipsimage
+                               anchors.left: parent.left
+                               anchors.top: innerskllname.bottom
+                               anchors.bottom: parent.bottom
+                               width: 16
+                               color: "#222"
+
+                           Image {
+                            id: innerskImg
+                            source: Pic
+                            width: 16
+                            height: 16
+                            anchors.centerIn: parent
+                               }
+                           }
+
+                           Rectangle {
+                           id: skilltipsinner
+                           anchors.left: skilltipsimage.right
+                           anchors.leftMargin: 10
+                           anchors.right: parent.right
+                           color: "#222"
+                           anchors.top: innerskllname.bottom
+                           anchors.bottom: parent.bottom
+
+                           Column{
+                               id: innerskillscolumn
+                               spacing: 2
+
+                           Label {wrapMode: Text.WordWrap; width: root.width; text: qsTr('<b>Command:</b> ' + CommandList.get(0).Commands)}
+                           Label {wrapMode: Text.WordWrap; width: root.width; text: qsTr('<b>Command:</b> ' + CommandList.get(1).Commands)}
+                               }
+                                   }
+                                       }
+                                           }
+                                               }
+                                                   }
+
+                       ListView {
+                           id: skillslistmodelview
+                           anchors.top: parent.top
+                           anchors.topMargin: 5
+                           anchors.left: parent.left
+                           anchors.right: parent.right
+                           anchors.bottom: parent.bottom
+                           model: SkillModel{}
+                           delegate: skillDelegate
+                           spacing: 4
+                           focus: false
+                           interactive: true
+                           clip: true;
+                       }
+
+            }
         }
 
+        Page {
+        id: settingspage
 
-        Text {
-            id: qboxinput
-            x: 0
-            y: 18
-            width: 450
-            height: 60
-            color: "#ffffff"
-            text: qsTr(" ")
-            textFormat: Text.PlainText
-            elide: Text.ElideMiddle
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignTop
-            font.pixelSize: 12
-            wrapMode: Text.WordWrap
+        Rectangle {
+            id: rectangle1
+            color: "#1e4e62"
+            anchors.fill: parent
+
+            Flickable {
+                id: rect1flickable
+                anchors.fill: parent
+                contentHeight: parent.height + 150
+                contentWidth: parent.width
+
+            Item {
+                id: settingstabcolumntop3
+                anchors.top: parent.top
+                anchors.topMargin: 40
+
+                Switch {
+                    id: welcomeintroswitch
+                    x: 0
+                    y: -25
+                    height: 25
+                    text: qsTr("Enable / Disable Intro Animation")
+                    checked:  true
+
+                }
+
+            }
+
+
+            Item {
+                id: settingstabcolumnbottom
+                anchors.left: parent.left
+                anchors.leftMargin: 10
+                anchors.top: settingstabcolumntop3.bottom
+                anchors.topMargin: 50
+
+                Label {
+                    id: fontsizelabelfld
+                    x: 0
+                    y: -38
+                    text: qsTr("Text Font Size: ")
+                    font.bold: true
+                }
+
+                TextField {
+                    id: fontsizetextfld
+                    width: 28
+                    height: 46
+                    text: qsTr("12")
+                    anchors.left: fontsizelabelfld.right
+                    anchors.verticalCenter: fontsizelabelfld.verticalCenter
+                    anchors.leftMargin: 6
+                }
+
+                Button {
+                    id: button1
+                    width: 102
+                    height: 42
+                    text: qsTr("Apply")
+                    anchors.verticalCenterOffset: -33
+                    anchors.verticalCenter: fontsizetextfld.verticalCenter
+                    anchors.left: label2.right
+                    anchors.leftMargin: 177
+
+                    onClicked: {
+                        textinputsize = fontsizetextfld.text
+                    }
+                }
+
+                TextField {
+                    id: textField1
+                    width: 274
+                    height: 43
+                    text: qsTr("/home/Aix/mycroft-core/mycroft.sh")
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenterOffset: 162
+                    anchors.horizontalCenter: fontsizetextfld.horizontalCenter
+                    anchors.top: fontsizetextfld.bottom
+                    anchors.topMargin: 2
+                }
+
+                TextField {
+                    id: textField2
+                    width: 275
+                    height: 40
+                    text: qsTr("/home/Aix/mycroft-core/mycroft.sh")
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenter: textField1.horizontalCenter
+                    anchors.top: textField1.bottom
+                    anchors.topMargin: -1
+                }
+
+                TextField {
+                    id: textField3
+                    width: 273
+                    height: 40
+                    text: qsTr("ws://0.0.0.0:8181/core")
+                    anchors.horizontalCenterOffset: 1
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenter: textField1.horizontalCenter
+                    anchors.top: textField2.bottom
+                    anchors.topMargin: -3
+                }
+
+                TextField {
+                    id: textField4
+                    width: 273
+                    height: 40
+                    text: qsTr("/home/aix/mycroft-core/msm/msm")
+                    anchors.horizontalCenterOffset: 1
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenter: textField1.horizontalCenter
+                    anchors.top: textField3.bottom
+                    anchors.topMargin: -3
+                }
+
+                TextField {
+                    id: textField5
+                    width: 273
+                    height: 40
+                    text: qsTr("search image url")
+                    anchors.horizontalCenterOffset: 1
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenter: textField1.horizontalCenter
+                    anchors.top: textField4.bottom
+                    anchors.topMargin: -3
+                }
+
+                Label {
+                    id: label1
+                    text: qsTr("Mycroft Start Script")
+                    font.bold: true
+                    anchors.top: fontsizelabelfld.bottom
+                    anchors.topMargin: 28
+                }
+
+                Label {
+                    id: label2
+                    x: -10
+                    text: qsTr("Mycroft Stop Script")
+                    font.bold: true
+                    anchors.horizontalCenter: label1.horizontalCenter
+                    anchors.top: label1.bottom
+                    anchors.topMargin: 14
+                }
+
+                Label {
+                    id: label3
+                    text: qsTr("Mycroft WS IP")
+                    textFormat: Text.AutoText
+                    font.bold: true
+                    anchors.top: label2.bottom
+                    anchors.topMargin: 18
+                    }
+
+                Label {
+                    id: label4
+                    text: qsTr("MSM Installer Script")
+                    textFormat: Text.AutoText
+                    font.bold: true
+                    anchors.top: label3.bottom
+                    anchors.topMargin: 18
+                    }
+
+                Label {
+                    id: label5
+                    text: qsTr("Custom Recognition")
+                    textFormat: Text.AutoText
+                    font.bold: true
+                    anchors.top: label4.bottom
+                    anchors.topMargin: 18
+                    }
+
+                }
+            }
+            Settings {
+                id: innerset
+                property alias wsip: textField3.text
+                property alias customlocstart: textField1.text
+                property alias customlocstop: textField2.text
+                property alias fntsize: fontsizetextfld.text
+                property alias msmloc: textField4.text
+                property alias customrecog: textField5.text
+                }
+            }
+
         }
 
-        Text {
-            id: qboxoutput
-            x: 0
-            y: 50
-            width: 450
-            height:60
-            color: "#ffffff"
-            wrapMode: Text.WordWrap
-            elide: Text.ElideMiddle
-            text: qsTr(" ")
-            verticalAlignment: Text.AlignTop
-            horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: 12
+        Page {
+        id: installerPage
+
+        Item {
+            id: msmtabtopbar
+            width: parent.width
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 50
+
+            TextField {
+            id: msmsearchfld
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.topMargin: 5
+            anchors.bottom: parent.bottom
+            anchors.right: getskillsbx.left
+            placeholderText: qsTr("Search Skills")
+
+            onTextChanged: {
+            if(text.length > 0 ) {
+                msmskillsModel.applyFilter(text.toLowerCase());
+            } else {
+                msmskillsModel.reload();
+            }
+        }
+    }
+
+        ToolButton {
+                id: getskillsbx
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                text: "\u27F3"
+                flat: true
+                width: Math.round(30)
+                height: width
+                z: 102
+
+                onClicked: {
+                        msmskillsModel.clear();
+                        refreshAllSkills();
+                    }
+                }
         }
 
-        Button {
-            id: regisbutton
-            text:"Visit Mycroft@Home"
-            visible: false;
-            anchors.top: qboxoutput.bottom
-            anchors.topMargin: -50
-            anchors.horizontalCenter: rectangleresultbox.horizontalCenter
-            onClicked: Qt.openUrlExternally("http://home.mycroft.ai");
-        }
- }
+        ListModel {
+            id: msmskillsModel
 
-    Rectangle {
+            Component.onCompleted: {
+                reload();
+                //console.log('Completing too early?');
+            }
+
+             function reload() {
+                var skList = getAllSkills();
+                msmskillsModel.clear();
+                for( var i=0; i < skList.length ; ++i ) {
+                    msmskillsModel.append(skList[i]);
+                }
+            }
+
+            function applyFilter(skName) {
+                var skList = getSkillByName(skName);
+                msmskillsModel.clear();
+                for( var i=0; i < skList.length ; ++i ) {
+                    msmskillsModel.append(skList[i]);
+                }
+            }
+        }
+
+        ListView {
+            id: msmlistView
+            anchors.top: msmtabtopbar.bottom
+            anchors.topMargin: 5
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            model: msmskillsModel
+            delegate: MsmView{}
+            spacing: 4
+            focus: false
+            interactive: true
+            clip: true;
+            }
+
+
+        }
+
+    }
+}
+
+    footer: Rectangle {
         id: rectanglebottombar
-        x: 0
-        y: 214
-        width: 450
-        height: 36
+        //anchors.bottom: parent.bottom
+        width: parent.width
+        height: 40
         color: "#1b1b1b"
         radius: 0
         border.color: "#80000000"
@@ -484,40 +720,27 @@ ApplicationWindow {
 
         TextField {
             id: qinput
-            x: 1
-            y: 4
-            width: 323
-            height: 27
+            anchors.left: parent.left
+            anchors.right: qinputbutton.left
+            height: parent.height
             placeholderText: qsTr("Enter Query or Say 'Hey Mycroft'")
             onAccepted: {
                 rectangleresultbox.visible = true;
-                suggestionswidgetloader.visible = false;
                 var socketmessage = {};
                 socketmessage.type = "recognizer_loop:utterance";
                 socketmessage.data = {};
                 socketmessage.data.utterances = [qinput.text];
                 socket.sendTextMessage(JSON.stringify(socketmessage));
-                //qinput.text =
-                anim1.running = true
             }
         }
 
         Button {
             id: qinputbutton
-            x: 322
-            y: 1
-            width: 128
-            height: 33
-            text: qsTr("                        ")
-            activeFocusOnPress: false
-            iconSource: "images/appicon.png"
-
-            style: ButtonStyle {
-                background: Rectangle {
-                    color: "#0b0b0b";
-
-                }
-            }
+            width: 150
+            anchors.right: parent.right
+            height: parent.height
+            text: qsTr("Enter Query")
+            //Material.theme: Material.Dark
 
             MouseArea {
                 id: mouseArea3
@@ -528,144 +751,78 @@ ApplicationWindow {
                 hoverEnabled: false
                 onClicked: {
                     rectangleresultbox.visible = true;
-                    suggestionswidgetloader.visible = false;
                     var socketmessage = {};
                     socketmessage.type = "recognizer_loop:utterance";
                     socketmessage.data = {};
                     socketmessage.data.utterances = [qinput.text];
                     socket.sendTextMessage(JSON.stringify(socketmessage));
-                    //qinput.text = ""
-                    anim1.running = true
-                }
-
-                Text {
-                    id: text1
-                    x: 37
-                    y: 9
-                    width: 75
-                    height: 12
-                    color: "#ffffff"
-                    text: qsTr("  Enter Query")
-                    font.pixelSize: 12
                 }
             }
         }
     }
 
-    Rectangle {
+    header: Rectangle {
         id: rectangletopbar
-        x: 0
-        y: 0
-        width: 450
+        anchors.left: parent.left
+        anchors.right: parent.right
         height: 37
         color: "#1d1d1d"
         border.width: 0
         border.color: "#80000000"
 
         Button {
-            id: startmycservice
-            x: 0
-            y: 0
-            width: 154
+            id: fullscreenbutton
+            anchors.left: parent.left
+            anchors.leftMargin: 2
+            width: 32
             height: 36
-            text: qsTr("")
+            onClicked: fullscreen = !fullscreen
 
-            style: ButtonStyle {
-                background: Rectangle {
-                    color: "#0b0b0b";
-
-                }
-            }
-
-
-          //  Settings {
-            //    id: getstngs
-              //  visible: false
-            //}
-
-            MouseArea {
-                id: mouseArea1
-                x: 0
-                y: 0
-                width: 149
-                height: 36
-                hoverEnabled: false
-
-                onClicked: {
-                                    var strt = settingswidgetloader.strscript + " " + "start"
-                                    myLauncher.launchScript(strt)
-                                    welcomewidgetloader.active = false;
-                                    suggestionswidgetloader.visible = true;
-                                    //connectws.text = qsTr("Starting...");
-                                    anim1.running = true
-                                    delay(12000, function() {
-                                        socket.active = true
-                                        //connectws.text = qsTr("Connected")
-                                        anim1.running = true
-                                    })
-                }
-
-                                Text {
-                                    id: text2
-                                    x: 8
-                                    y: 11
-                                    width: 133
-                                    height: 17
-                                    color: "#ffffff"
-                                    text: qsTr("Start Mycroft Service")
-                                    horizontalAlignment: Text.AlignHCenter
-                                    font.pixelSize: 12
-                                }
-
+            Image {
+                id: fullscreenimg
+                source: "images/view-fullscreen.svg"
+                width: 16
+                height: 16
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
             }
         }
 
-        Button {
-            id: stopmycservice
-            x: 155
-            y: 0
-            width: 148
+
+        SwitchButton {
+            id: startmycservice
+            checked: false
             height: 36
-            text: qsTr(" ")
+            anchors.left: fullscreenbutton.right
+            anchors.leftMargin: 5
 
-            style: ButtonStyle {
-                background: Rectangle {
-                    color: "#0b0b0b";
-
+            onClicked: {
+            if (startmycservice.checked === true) {
+                var strt = innerset.customlocstart + " " + "start"
+                //console.log(strt)
+                myLauncher.launchScript(strt)
+                welcomewidgetloader.active = false;
+                delay(12000, function() {
+                socket.active = true
+                })
+            }
+            if (startmycservice.checked === false) {
+                var stpsc = innerset.customlocstop + " " + "stop"
+                myLauncher.launchScript(stpsc)
+                welcomewidgetloader.active = true;
+                socket.active = false
                 }
             }
+        }
 
-            MouseArea {
-                id: mouseArea2
-                x: 0
-                y: 0
-                width: 143
-                height: 36
-                hoverEnabled: false
-
-                onClicked: {
-                    var stpsc = settingswidgetloader.stpscript + " " + "stop"
-                    //console.log(stpsc)
-                    myLauncher.launchScript(stpsc)
-                    welcomewidgetloader.active = true;
-                    suggestionswidgetloader.visible = false;
-                    rectangleresultbox.visible = false;
-                    //connectws.text = qsTr("Stopped");
-                    socket.active = false
-                    anim1.running = true
-                }
-
-                Text {
-                    id: text3
-                    x: 12
-                    y: 11
-                    width: 122
-                    height: 15
-                    color: "#ffffff"
-                    text: qsTr("Stop Mycroft Service")
-                    font.pixelSize: 12
-                }
-            }
+        Rectangle {
+        id: seperaterlinea
+        width: 1
+        anchors.left: startmycservice.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: 5
+        color: "#99cccccc"
         }
 
         Text {
@@ -674,38 +831,95 @@ ApplicationWindow {
             y: 0
             anchors.top: parent.top
             anchors.topMargin: 10
-            anchors.left: stopmycservice.right
+            anchors.left: seperaterlinea.right
             anchors.leftMargin: 10
             color: "#ffffff"
-            width: 86
             height: 36
-            text: qsTr("Not Started")
+            text: qsTr("Disabled")
             }
 
-        Button {
-           id: apsettings
-           width: 50
-           height: 36
-           anchors.left: connectws.right
-           iconSource: "images/settings-icon.png"
-           iconName: "settings-icon.png"
-
-           onClicked: {
-                if (settingswidgetloader.visible === false) {
-                    welcomewidgetloader.active = false
-                    suggestionswidgetloader.active = false
-                    rectangleresultbox.visible = false
-                    settingswidgetloader.visible = true
-                }
-                else if (settingswidgetloader.visible === true)
-                {
-                    settingswidgetloader.visible = false
-                    suggestionswidgetloader.active = true
-                    rectangleresultbox.visible = true
-                }
-           }
-
+        Rectangle {
+        id: seperaterlineb
+        width: 1
+        anchors.left: connectws.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: 10
+        color: "#99cccccc"
         }
+
+        TopBarAnim {
+            id: midbarAnim
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: 7
+            anchors.left: seperaterlineb.left
+            anchors.right: bar.right
+            height: parent.height
         }
+
+        TabBar {
+            id: bar
+            width: 138
+            anchors.right: parent.right
+            height: 36
+            currentIndex: swipeView.currentIndex
+
+            TabButton {
+                width: 32
+                height: 36
+                Image {
+                    id: tabimage1
+                    source: "images/home.svg"
+                    width: 16
+                    height: 16
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+               }
+
+            TabButton {
+                width: 32
+                height: 36
+
+                Image {
+                    id: tabimage2
+                    source: "images/hint.svg"
+                    width: 16
+                    height: 16
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+
+            TabButton {
+                width: 32
+                height: 36
+                Image {
+                    id: tabimage3
+                    source: "images/settings.svg"
+                    width: 16
+                    height: 16
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+
+            TabButton {
+                width: 32
+                height: 36
+                Image {
+                    id: tabimage4
+                    source: "images/installer.svg"
+                    width: 16
+                    height: 16
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                }
+            }
+        }
+
+
+
  }
 
