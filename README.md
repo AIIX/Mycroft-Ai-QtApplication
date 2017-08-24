@@ -16,7 +16,7 @@ What's New:
 * Appimage for the Qt Application for any desktop environment (Linux)
 * Download -> chmod +x mycroft-qtapplication.AppImage -> Run
 * Go To Settings and Set the Start and Stop path to your Mycroft.sh file in the Mycroft-Core folder
-* Toggle The Switch on The Top Right Corner to Start Mycroft  
+* Toggle The Switch on The Top Left Corner to Start Mycroft  
 
 ### Building From Source: 
 
