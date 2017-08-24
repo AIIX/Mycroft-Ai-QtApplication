@@ -1,7 +1,7 @@
 ## Mycroft AI Standalone GUI Client Version 1.3
 ##### Standalone GUI client for Mycroft written in QT, support for all Desktop Environments
 ###### Appimage Release - Comes bundled with all the QT/GUI Dependencies
- 
+
 What's New: 
 * added: Fullscreen support, ability to resize in windowed mode
 * added: New conversation model allows visual feedback for skill results
@@ -13,8 +13,10 @@ What's New:
 * changed: Redesign for better space management and dedicated animations bar
 
 #### AppImage:
-* Appimage for the Qt Application for any desktop environment (Linux).
+* Appimage for the Qt Application for any desktop environment (Linux)
 * Download -> chmod +x mycroft-qtapplication.AppImage -> Run
+* Go To Settings and Set the Start and Stop path to your Mycroft.sh file in the Mycroft-Core folder
+* Toggle The Switch on The Top Right Corner to Start Mycroft  
 
 ### Building From Source: 
 
