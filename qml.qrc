@@ -48,5 +48,7 @@
         <file>images/spell.png</file>
         <file>images/climatesc.jpg</file>
         <file>images/mycroft-plasma-appicon.png</file>
+        <file>ImgRecogType.qml</file>
+        <file>images/silence.png</file>
     </qresource>
 </RCC>

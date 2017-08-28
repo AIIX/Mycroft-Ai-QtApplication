@@ -776,6 +776,7 @@ ApplicationWindow {
             anchors.leftMargin: 2
             width: 32
             height: 36
+            hoverEnabled: true
             onClicked: fullscreen = !fullscreen
 
             Image {
@@ -786,15 +787,51 @@ ApplicationWindow {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }
+
+            ToolTip.text: qsTr("Toggle Fullscreen")
+            ToolTip.delay: 1000
+            ToolTip.timeout: 5000
+            ToolTip.visible: hovered
         }
 
+
+        Button {
+            id: silencebutton
+            anchors.left: fullscreenbutton.right
+            anchors.leftMargin: 2
+            width: 32
+            height: 36
+            hoverEnabled: true
+            onClicked: {
+                var socketmessage = {};
+                socketmessage.type = "recognizer_loop:utterance";
+                socketmessage.data = {};
+                socketmessage.data.utterances = ["stop"];
+                socket.sendTextMessage(JSON.stringify(socketmessage));
+            }
+
+            Image {
+                id: silenceimg
+                source: "images/silence.png"
+                width: 16
+                height: 16
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            ToolTip.text: qsTr("End Conversation")
+            ToolTip.delay: 1000
+            ToolTip.timeout: 5000
+            ToolTip.visible: hovered
+        }
 
         SwitchButton {
             id: startmycservice
             checked: false
             height: 36
-            anchors.left: fullscreenbutton.right
+            anchors.left: silencebutton.right
             anchors.leftMargin: 5
+            hoverEnabled: true
 
             onClicked: {
             if (startmycservice.checked === true) {
@@ -813,6 +850,12 @@ ApplicationWindow {
                 socket.active = false
                 }
             }
+
+
+            ToolTip.text: qsTr("Start/Stop Mycroft")
+            ToolTip.delay: 1000
+            ToolTip.timeout: 5000
+            ToolTip.visible: hovered
         }
 
         Rectangle {
@@ -867,6 +910,7 @@ ApplicationWindow {
             TabButton {
                 width: 32
                 height: 36
+                hoverEnabled: true
                 Image {
                     id: tabimage1
                     source: "images/home.svg"
@@ -875,12 +919,18 @@ ApplicationWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
+
+                ToolTip.text: qsTr("Home")
+                ToolTip.delay: 1000
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
                }
 
             TabButton {
                 width: 32
                 height: 36
-
+                hoverEnabled: true
                 Image {
                     id: tabimage2
                     source: "images/hint.svg"
@@ -889,11 +939,18 @@ ApplicationWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
+                ToolTip.text: qsTr("Tips")
+                ToolTip.delay: 1000
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
             }
 
             TabButton {
                 width: 32
                 height: 36
+                hoverEnabled: true
+
                 Image {
                     id: tabimage3
                     source: "images/settings.svg"
@@ -902,11 +959,18 @@ ApplicationWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
+                ToolTip.text: qsTr("Settings")
+                ToolTip.delay: 1000
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
             }
 
             TabButton {
                 width: 32
                 height: 36
+                hoverEnabled: true
+
                 Image {
                     id: tabimage4
                     source: "images/installer.svg"
@@ -915,6 +979,11 @@ ApplicationWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
+                ToolTip.text: qsTr("Install Skills")
+                ToolTip.delay: 1000
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
                 }
             }
         }
