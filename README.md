@@ -39,3 +39,9 @@ What's New:
 - Select mycroft-qtapplication.pro file 
 - Check for Errors, Missing Dependencies
 - Build & Run
+
+#### Using Mycroft AI Forks
+##### Jarbas AI - https://github.com/JarbasAI/JarbasAI
+- Open Application
+- Goto Settings
+- Replace "ws://0.0.0.0:8181/core" with "ws://0.0.0.0:8186/core"
