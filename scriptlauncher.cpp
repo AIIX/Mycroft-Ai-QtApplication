@@ -1,5 +1,6 @@
 #include "scriptlauncher.h"
 #include <QDebug>
+#include <QProcess>
 
 ScriptLauncher::ScriptLauncher(QObject *parent) :
     QObject(parent),
@@ -13,5 +14,5 @@ void ScriptLauncher::launchScript(const QString &program)
     m_process->waitForFinished(-1);
     QByteArray bytes = m_process->readAllStandardOutput();
     QString output = QString::fromLocal8Bit(bytes);
-    qDebug() << "hello" << output;
+    //return output;
 }

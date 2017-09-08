@@ -26,12 +26,34 @@ ApplicationWindow {
     property alias strscript: textField1.text
     property alias stpscript: textField2.text
     property alias wspath: textField3.text
+    property var  messagedebugtxt: []
+    property string dbgtypeall: debmodegroup.checkedButton.objectName
 
     Material.theme: Material.Dark
     Material.accent: Material.Cyan
 
     property bool fullscreen: false
     onFullscreenChanged: root.visibility = (fullscreen ? Window.FullScreen : Window.Windowed)
+
+    function filterdbg(dbgmsg){
+        switch(dbgtypeall){
+        case "debugmodelselectionall":
+            var senddbg = dbgmsg
+            debugconvoModel.append({detext:senddbg})
+            break
+        case "debugmodelselectionutterance":
+            var uttrdbg = JSON.parse(dbgmsg)
+              if (uttrdbg && uttrdbg.data && typeof uttrdbg.data.intent_type !== 'undefined'){
+              var senduttrdbgintent = uttrdbg.data.intent_type
+                debugconvoModel.append({detext:senduttrdbgintent})
+              }
+              if(uttrdbg.type === "speak"){
+                var senduttrdbgb = uttrdbg.data.utterance
+                debugconvoModel.append({detext:senduttrdbgb})
+              }
+            break
+            }
+        }
 
     function filterSpeak(msg){
             convoLmodel.append({
@@ -127,6 +149,7 @@ ApplicationWindow {
         url: innerset.wsip
         onTextMessageReceived: {
             var somestring = JSON.parse(message)
+                        filterdbg(message)
                         var msgType = somestring.type;
                         qinput.focus = false;
 
@@ -210,7 +233,19 @@ ApplicationWindow {
         Page {
         id: homeTab
 
-        Loader {
+        MouseArea {
+        anchors.fill:  parent
+        id: hmetbma
+        propagateComposedEvents: true
+        }
+
+
+        Loader {        MouseArea {
+                anchors.fill:  parent
+                id:ppupmousearea
+                propagateComposedEvents: true
+                }
+
             id: welcomewidgetloader
             anchors.fill: parent
             visible: true;
@@ -229,7 +264,10 @@ ApplicationWindow {
 
         Flickable {
             id: rect2flickable
-            anchors.fill: parent
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
             contentHeight: parent.height
             contentWidth: parent.width
 
@@ -323,7 +361,7 @@ ApplicationWindow {
                                                     }
                                                         }
                                                            }
-                                                                 }
+                                                               }
 
         Page {
         id: hintTab
@@ -600,7 +638,6 @@ ApplicationWindow {
                     anchors.top: label4.bottom
                     anchors.topMargin: 18
                     }
-
                 }
             }
             Settings {
@@ -685,6 +722,7 @@ ApplicationWindow {
                     msmskillsModel.append(skList[i]);
                 }
             }
+
         }
 
         ListView {
@@ -705,6 +743,168 @@ ApplicationWindow {
 
         }
 
+        Page {
+        id: debuggerpage
+
+            Rectangle {
+                id: rectangle2debug
+                anchors.fill: parent
+                color: "#1b1b1b"
+
+                Rectangle {
+                    id: debgbar
+                    color: "#0c0c0c"
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 45
+
+                    ButtonGroup {
+                        id: debmodegroup
+                        buttons: debugmoderow.children
+                    }
+
+                    Label {
+                        id: debugmethodlabel
+                        height: 0
+                        anchors.left: parent.left
+                        anchors.leftMargin: 10
+                        color:"#fff"
+                        text: "Debug Mode"
+                        anchors.verticalCenterOffset: -8
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Row {
+                        id: debugmoderow
+                        anchors.left: debugmethodlabel.right
+                        anchors.leftMargin: 10
+                        spacing: 5
+
+                        RadioButton {
+                            id: debugmodelselectionall
+                            text: "Raw"
+                            checked: true
+                            objectName: "debugmodelselectionall"
+                        }
+
+                        RadioButton {
+                            id: debugmodelselectionutterance
+                            text: "Utterance"
+                            objectName: "debugmodelselectionutterance"
+                        }
+                    }
+
+                    Button {
+                    id: cleardbg
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: 100
+                    text: "Clear"
+                    onClicked: {
+                        debugconvoModel.clear()
+                        }
+                    }
+                }
+
+                ListModel {
+                    id: debugconvoModel
+                }
+
+                Rectangle {
+                    id: rectangle1cm
+                    x: 0
+                    width: 32
+                    color: "#111111"
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 0
+                    anchors.top: debgbar.bottom
+                    anchors.topMargin: 0
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0
+
+                    ToolButton {
+                        id: buttdscrollup
+                        x: 0
+                        y: 0
+                        width: 32
+                        height: 32
+                        text: qsTr("▲")
+                        anchors.top: parent.top
+                        anchors.topMargin: 0
+                        anchors.right: parent.right
+                        anchors.rightMargin: 0
+
+                        onClicked: {
+                        debuggrtext.positionViewAtBeginning()
+                        }
+                    }
+
+                    ToolButton {
+                        id: buttscrolldwn
+                        x: 0
+                        y: 408
+                        width: 32
+                        height: 32
+                        text: qsTr("▼")
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 0
+                        anchors.right: parent.right
+                        anchors.rightMargin: 0
+
+                        onClicked: {
+                        debuggrtext.positionViewAtEnd()
+                        }
+                    }
+                }
+
+                ListView {
+                    id: debuggrtext
+                    anchors.top: debgbar.bottom
+                    anchors.left: parent.left
+                    anchors.right: rectangle1cm.left
+                    anchors.bottom: parent.bottom
+                    verticalLayoutDirection: ListView.TopToBottom
+                    clip: true
+                    model: debugconvoModel
+
+                    property var messgtxtdbg: debuggrtext.contentItem.children[0]
+
+                    delegate: Component {
+                        Column {
+                            id: dbgrw
+                            spacing: 2
+
+                            property alias msgbdf: messageTextdbg.text
+
+                            Rectangle {
+                                id: messageRectdbg
+                                width: cbwidth
+                                height: messageTextdbg.implicitHeight + 6
+                                color: "#111"
+
+                                TextEdit {
+                                    id: messageTextdbg
+                                    text: model.detext
+                                    width: messageRectdbg.width
+                                    wrapMode: TextEdit.Wrap
+                                    font.pixelSize: innerset.fntsize
+                                    color: "#fff"
+                                }
+                            }
+                        }
+                    }
+
+                    onCountChanged: {
+                        debuggrtext.positionViewAtEnd();
+                    }
+                }
+               }
+
+        }
+
     }
 }
 
@@ -722,7 +922,8 @@ ApplicationWindow {
             id: qinput
             anchors.left: parent.left
             anchors.right: qinputbutton.left
-            height: parent.height
+            anchors.bottom: parent.bottom
+            height: 40
             placeholderText: qsTr("Enter Query or Say 'Hey Mycroft'")
             onAccepted: {
                 rectangleresultbox.visible = true;
@@ -738,7 +939,8 @@ ApplicationWindow {
             id: qinputbutton
             width: 150
             anchors.right: parent.right
-            height: parent.height
+            anchors.bottom: parent.bottom
+            height: 40
             text: qsTr("Enter Query")
             //Material.theme: Material.Dark
 
@@ -842,6 +1044,7 @@ ApplicationWindow {
                 delay(12000, function() {
                 socket.active = true
                 })
+                convoLmodel.clear()
             }
             if (startmycservice.checked === false) {
                 var stpsc = innerset.customlocstop + " " + "stop"
@@ -902,7 +1105,7 @@ ApplicationWindow {
 
         TabBar {
             id: bar
-            width: 138
+            width: 170
             anchors.right: parent.right
             height: 36
             currentIndex: swipeView.currentIndex
@@ -985,10 +1188,27 @@ ApplicationWindow {
                 ToolTip.timeout: 5000
                 ToolTip.visible: hovered
                 }
+
+            TabButton {
+                width: 32
+                height: 36
+                hoverEnabled: true
+
+                Image {
+                    id: tabimage5
+                    source: "images/activitydebug.png"
+                    width: 16
+                    height: 16
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                ToolTip.text: qsTr("Debug Tool")
+                ToolTip.delay: 1000
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
+                }
             }
         }
-
-
-
- }
+    }
 

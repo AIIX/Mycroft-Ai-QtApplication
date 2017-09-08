@@ -50,5 +50,6 @@
         <file>images/mycroft-plasma-appicon.png</file>
         <file>ImgRecogType.qml</file>
         <file>images/silence.png</file>
+        <file>images/activitydebug.png</file>
     </qresource>
 </RCC>
