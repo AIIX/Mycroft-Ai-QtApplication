@@ -2,7 +2,8 @@
 ##### Standalone GUI client for Mycroft written in QT, support for all Desktop Environments
 ###### Appimage Release - Comes bundled with all the QT/GUI Dependencies
 
-What's New: 
+What's New:
+* added: Debug Tools - messagebus debug modes: Raw / Utterance
 * added: Fullscreen support, ability to resize in windowed mode
 * added: New conversation model allows visual feedback for skill results
 * added: Web-view integration for skills with HTML type data
