@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG += c++11
 
 QT += core qml quick widgets quickcontrols2
-QT += webkit websockets xml
+QT += webengine webenginewidgets websockets xml
 
 SOURCES += main.cpp \
     scriptlauncher.cpp \

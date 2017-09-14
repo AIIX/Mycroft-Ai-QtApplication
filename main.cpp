@@ -12,10 +12,12 @@
 #include <QQuickStyle>
 #include "msmapp.h"
 #include "filereader.h"
+#include <QtWebEngine/qtwebengineglobal.h>
 
 int main(int argc, char *argv[])
 { 
     QApplication app(argc, argv);
+    QtWebEngine::initialize();
     QApplication::setWindowIcon(QIcon(":/images/mycroft-plasma-appicon.png"));
     qmlRegisterType<ScriptLauncher>("MycroftLauncher", 1, 0, "ScriptLauncher");
     qmlRegisterType<MsmApp>("MsmInstaller", 1, 0, "MsmApp");
